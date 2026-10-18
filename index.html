@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>VidSpark AI – Turn your script into video</title>
-  <meta name="description" content="VidSpark AI is a free, open-source video maker that turns a written script into a video.">
+  <meta name="description" content="VidSpark AI is a free video maker that turns a written script into a real video, right in your browser.">
   <style>
     :root {
       --bg: #f6f7fb;
@@ -37,6 +37,7 @@
       }
     }
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
     html { scroll-behavior: smooth; }
     body {
       margin: 0;
@@ -47,7 +48,6 @@
     }
     .wrap { max-width: 1040px; margin: 0 auto; padding: 0 18px; }
 
-    /* Header */
     header {
       position: sticky; top: 0; z-index: 10;
       background: var(--bg);
@@ -58,7 +58,6 @@
     .logo span { background: linear-gradient(90deg, var(--brand), var(--brand-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
     .nav a.link { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
 
-    /* Hero */
     .hero { padding: 48px 0 28px; text-align: center; }
     .badge {
       display: inline-block; padding: 6px 12px; border-radius: 999px;
@@ -76,8 +75,8 @@
     .btn:disabled { opacity: 0.45; cursor: not-allowed; }
     .btn.secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
     .btn.block { width: 100%; }
+    .btn.cancel { margin-top: 10px; }
 
-    /* Studio */
     .studio { display: grid; gap: 18px; padding: 18px 0 40px; }
     @media (min-width: 860px) { .studio { grid-template-columns: 1.1fr 0.9fr; align-items: start; } }
     .card {
@@ -98,6 +97,7 @@
     .options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
     .options.four { grid-template-columns: repeat(2, 1fr); }
     @media (min-width: 480px) { .options.four { grid-template-columns: repeat(4, 1fr); } }
+    .opt { position: relative; }
     .opt input { position: absolute; opacity: 0; pointer-events: none; }
     .opt span {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -108,6 +108,7 @@
     .opt small { color: var(--muted); font-weight: 500; font-size: 0.75rem; }
     .opt input:checked + span { border-color: var(--brand); background: rgba(109, 74, 255, 0.12); }
     .opt input:focus-visible + span { outline: 3px solid rgba(109, 74, 255, 0.45); }
+    .opt input:disabled + span { opacity: 0.55; cursor: not-allowed; }
 
     .actions { margin-top: 20px; }
     .status {
@@ -118,18 +119,18 @@
     .status.warn { background: var(--warn-bg); color: var(--warn-text); }
     .status.ok { background: var(--ok-bg); color: var(--ok-text); }
 
-    /* Preview */
     .stage {
       width: 100%; max-height: 62vh; margin: 0 auto;
       aspect-ratio: var(--ratio, 16 / 9);
       background: var(--bg); border: 2px dashed var(--border); border-radius: 14px;
       display: flex; align-items: center; justify-content: center; text-align: center;
-      padding: 14px; color: var(--muted);
+      padding: 14px; color: var(--muted); overflow: hidden;
     }
     .stage strong { display: block; color: var(--text); margin-bottom: 4px; }
+    .stage.has-media { padding: 0; border-style: solid; background: #000; }
+    .stage canvas, .stage video { width: 100%; height: 100%; object-fit: contain; display: block; }
     .meta { margin: 12px 0 14px; color: var(--muted); font-size: 0.9rem; text-align: center; }
 
-    /* Info sections */
     section.info { padding: 12px 0 36px; }
     section.info h2 { font-size: 1.5rem; letter-spacing: -0.02em; margin: 0 0 14px; }
     .grid3 { display: grid; gap: 14px; }
@@ -160,9 +161,9 @@
     <div class="wrap">
 
       <section class="hero">
-        <span class="badge">Stage 1 · Interface preview</span>
+        <span class="badge">Stage 2 · Real video maker</span>
         <h1>Turn your script into <em>video</em></h1>
-        <p>Write your script, choose a format and length, and preview the result. The video engine is being built step by step, and this page will say clearly when it is connected.</p>
+        <p>Write your script, choose a format and length, and create a real video file on your own device. Free, private, and no account needed.</p>
         <a class="btn" href="#studio">Start with a script</a>
       </section>
 
@@ -188,7 +189,7 @@
           </fieldset>
 
           <fieldset>
-            <legend>Target duration</legend>
+            <legend>Video length</legend>
             <div class="options four">
               <label class="opt"><input type="radio" name="duration" value="15" checked><span>15 sec</span></label>
               <label class="opt"><input type="radio" name="duration" value="30"><span>30 sec</span></label>
@@ -198,7 +199,8 @@
           </fieldset>
 
           <div class="actions">
-            <button class="btn block" id="generateBtn" type="button">Generate video</button>
+            <button class="btn block" id="generateBtn" type="button">Create video</button>
+            <button class="btn secondary block cancel" id="cancelBtn" type="button" hidden>Cancel</button>
             <div class="status" id="status" role="status" aria-live="polite"></div>
           </div>
         </div>
@@ -208,31 +210,31 @@
           <div class="stage" id="stage">
             <div>
               <strong>No video yet</strong>
-              Your video will appear here once the video engine is connected.
+              Press “Create video” and your video will appear here.
             </div>
           </div>
-          <p class="meta" id="meta">Format: 16:9 · Target length: 15 sec</p>
-          <button class="btn secondary block" id="downloadBtn" type="button" disabled>Download video (not available yet)</button>
+          <p class="meta" id="meta">Format: 16:9 · Length: 15 sec</p>
+          <button class="btn secondary block" id="downloadBtn" type="button" disabled>Download video (create one first)</button>
         </div>
 
       </section>
 
       <section class="info">
-        <h2>How VidSpark AI will work</h2>
+        <h2>How it works</h2>
         <div class="grid3">
-          <div class="card"><div class="num">1</div><h3>Write a script</h3><p>Paste or type the words you want in your video.</p></div>
-          <div class="card"><div class="num">2</div><h3>Pick a format</h3><p>Choose landscape, vertical, or square, plus a target length.</p></div>
-          <div class="card"><div class="num">3</div><h3>Preview and download</h3><p>Watch the result in the page, then save it as an MP4 file.</p></div>
+          <div class="card"><div class="num">1</div><h3>Write a script</h3><p>Each sentence becomes an animated slide.</p></div>
+          <div class="card"><div class="num">2</div><h3>Pick a format</h3><p>Choose landscape, vertical, or square, plus a length.</p></div>
+          <div class="card"><div class="num">3</div><h3>Create and download</h3><p>Your device records the video. Preview it, then save the file.</p></div>
         </div>
       </section>
 
       <section class="info">
         <div class="honest">
-          <h2>What works today, and what doesn’t</h2>
+          <h2>What this does, and what it doesn’t</h2>
           <ul>
-            <li>Works now: the script box, format and length options, and the live preview shape.</li>
-            <li>Not connected yet: the video engine, voice, and downloads.</li>
-            <li>Free tools have real limits. Video creation will be limited by free computing capacity, so it will not be unlimited.</li>
+            <li>Works now: a real video file made on your device from your script, with preview and download.</li>
+            <li>Not included yet: AI-generated footage, voiceover, music, and images.</li>
+            <li>Private: your script is not uploaded anywhere. Making the video takes as long as the video itself, so keep this screen open.</li>
           </ul>
         </div>
       </section>
@@ -251,8 +253,20 @@
       var charCount = document.getElementById("charCount");
       var stage = document.getElementById("stage");
       var meta = document.getElementById("meta");
-      var status = document.getElementById("status");
+      var statusBox = document.getElementById("status");
       var generateBtn = document.getElementById("generateBtn");
+      var cancelBtn = document.getElementById("cancelBtn");
+      var downloadBtn = document.getElementById("downloadBtn");
+
+      var state = { url: null, ext: "webm", busy: false, cancelled: false, raf: 0, recorder: null };
+
+      var palettes = [
+        ["#6d4aff", "#ff4a9e"],
+        ["#0ea5e9", "#6d4aff"],
+        ["#f97316", "#ef4444"],
+        ["#10b981", "#0ea5e9"],
+        ["#8b5cf6", "#ec4899"]
+      ];
 
       function selected(name) {
         return document.querySelector('input[name="' + name + '"]:checked');
@@ -265,42 +279,192 @@
         charCount.textContent = script.value.length + " / 2000 characters";
       }
 
-      function updatePreview() {
+      function ratioSize() {
+        var label = selected("ratio").dataset.label;
+        if (label === "9:16") return { w: 720, h: 1280 };
+        if (label === "1:1") return { w: 720, h: 720 };
+        return { w: 1280, h: 720 };
+      }
+
+      function updateMeta() {
         var ratio = selected("ratio");
         var duration = selected("duration");
+        var size = ratioSize();
         stage.style.setProperty("--ratio", ratio.value);
-        meta.textContent = "Format: " + ratio.dataset.label + " · Target length: " + duration.value + " sec";
+        meta.textContent = "Format: " + ratio.dataset.label + " · Length: " + duration.value + " sec · " + size.w + "×" + size.h;
       }
 
       function showStatus(message, type) {
-        status.textContent = message;
-        status.className = "status show " + type;
+        statusBox.textContent = message;
+        statusBox.className = "status show " + type;
       }
 
-      script.addEventListener("input", updateCounts);
-      document.querySelectorAll('input[name="ratio"], input[name="duration"]').forEach(function (el) {
-        el.addEventListener("change", updatePreview);
-      });
+      function setBusy(busy) {
+        state.busy = busy;
+        generateBtn.disabled = busy;
+        cancelBtn.hidden = !busy;
+        script.disabled = busy;
+        document.querySelectorAll('input[name="ratio"], input[name="duration"]').forEach(function (el) {
+          el.disabled = busy;
+        });
+      }
 
-      generateBtn.addEventListener("click", function () {
+      function resetStage() {
+        stage.className = "stage";
+        stage.innerHTML = "<div><strong>No video yet</strong>Press “Create video” and your video will appear here.</div>";
+      }
+
+      function splitSentences(text) {
+        var parts = text.replace(/\r/g, "").match(/[^.!?؟۔\n]+[.!?؟۔]*/g) || [];
+        return parts.map(function (s) { return s.trim(); }).filter(function (s) { return s.length > 0; });
+      }
+
+      function wrapLines(ctx, text, maxW) {
+        var words = text.split(/\s+/);
+        var lines = [];
+        var line = "";
+        words.forEach(function (word) {
+          var test = line ? line + " " + word : word;
+          if (ctx.measureText(test).width > maxW && line) {
+            lines.push(line);
+            line = word;
+          } else {
+            line = test;
+          }
+        });
+        if (line) lines.push(line);
+        return lines;
+      }
+
+      function layoutScene(ctx, text, W, H, rtl) {
+        var maxW = W * 0.84;
+        var maxH = H * 0.62;
+        var base = Math.min(W, H);
+        var size = Math.round(base * 0.085);
+        var minSize = Math.round(base * 0.035);
+        var font, lines, lineH;
+        ctx.direction = rtl ? "rtl" : "ltr";
+        while (true) {
+          font = "700 " + size + 'px system-ui, "Segoe UI", Roboto, Arial, sans-serif';
+          ctx.font = font;
+          lines = wrapLines(ctx, text, maxW);
+          lineH = size * 1.3;
+          if (lines.length * lineH <= maxH || size <= minSize) break;
+          size -= 2;
+        }
+        return { text: text, lines: lines, lineH: lineH, size: size, font: font, rtl: rtl };
+      }
+
+      function buildScenes(ctx, text, total, W, H) {
+        var sentences = splitSentences(text);
+        if (!sentences.length) sentences = [text];
+        var maxScenes = Math.max(1, Math.floor(total / 3));
+        var count = Math.min(sentences.length, maxScenes);
+        var rtl = /[\u0600-\u06FF]/.test(text);
+        var scenes = [];
+        for (var i = 0; i < count; i++) {
+          var start = Math.round(i * sentences.length / count);
+          var end = Math.round((i + 1) * sentences.length / count);
+          var chunk = sentences.slice(start, end).join(" ");
+          scenes.push(layoutScene(ctx, chunk, W, H, rtl));
+        }
+        return scenes;
+      }
+
+      function draw(ctx, W, H, scene, idx, t, total, sceneDur) {
+        var local = Math.max(0, Math.min(sceneDur, t - idx * sceneDur));
+        var pal = palettes[idx % palettes.length];
+        var a = t * 0.2 + idx;
+        var x1 = W / 2 - Math.cos(a) * W / 2;
+        var y1 = H / 2 - Math.sin(a) * H / 2;
+        var g = ctx.createLinearGradient(x1, y1, W - x1, H - y1);
+        g.addColorStop(0, pal[0]);
+        g.addColorStop(1, pal[1]);
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "rgba(0,0,0,0.28)";
+        ctx.fillRect(0, 0, W, H);
+
+        var fadeIn = Math.min(1, local / 0.5);
+        var fadeOut = Math.min(1, (sceneDur - local) / 0.3);
+        var alpha = Math.max(0, Math.min(fadeIn, fadeOut));
+        var eased = 1 - Math.pow(1 - fadeIn, 3);
+        var offset = (1 - eased) * H * 0.03;
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.direction = scene.rtl ? "rtl" : "ltr";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = scene.font;
+        ctx.fillStyle = "#ffffff";
+        ctx.shadowColor = "rgba(0,0,0,0.35)";
+        ctx.shadowBlur = scene.size * 0.12;
+        var startY = H * 0.47 - (scene.lines.length - 1) * scene.lineH / 2 + offset;
+        for (var i = 0; i < scene.lines.length; i++) {
+          ctx.fillText(scene.lines[i], W / 2, startY + i * scene.lineH);
+        }
+        ctx.restore();
+
+        var barH = Math.max(4, H * 0.012);
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.fillRect(0, H - barH, W * Math.min(1, t / total), barH);
+
+        ctx.save();
+        ctx.direction = "ltr";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+        ctx.globalAlpha = 0.7;
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "700 " + Math.round(Math.min(W, H) * 0.03) + "px system-ui, Arial, sans-serif";
+        ctx.fillText("VidSpark AI", W * 0.04, H - H * 0.03);
+        ctx.restore();
+      }
+
+      function pickMime() {
+        var list = [
+          "video/mp4;codecs=avc1.42E01E",
+          "video/mp4",
+          "video/webm;codecs=vp9",
+          "video/webm;codecs=vp8",
+          "video/webm"
+        ];
+        for (var i = 0; i < list.length; i++) {
+          if (MediaRecorder.isTypeSupported(list[i])) return list[i];
+        }
+        return "";
+      }
+
+      function showResult(blob, type, fastNote) {
+        if (state.url) URL.revokeObjectURL(state.url);
+        state.url = URL.createObjectURL(blob);
+        state.ext = /mp4/.test(type) ? "mp4" : "webm";
+        stage.innerHTML = "";
+        stage.className = "stage has-media";
+        var video = document.createElement("video");
+        video.controls = true;
+        video.playsInline = true;
+        video.src = state.url;
+        stage.appendChild(video);
+        downloadBtn.disabled = false;
+        downloadBtn.textContent = "Download video (." + state.ext + ")";
+        var mb = (blob.size / 1048576).toFixed(1);
+        var msg = "Done! Your video is ready (" + state.ext.toUpperCase() + ", " + mb + " MB). It was created on your device and not uploaded anywhere.";
+        if (fastNote) msg += " " + fastNote;
+        showStatus(msg, "ok");
+      }
+
+      function startRender() {
+        if (state.busy) return;
         var text = script.value.trim();
         if (!text) {
           showStatus("Please write a script first.", "warn");
           script.focus();
           return;
         }
-        var ratio = selected("ratio").dataset.label;
-        var duration = selected("duration").value;
-        showStatus(
-          "Your script and settings (" + ratio + ", " + duration + " sec) look good, but no video was created. " +
-          "The video engine is not connected yet. Nothing was generated, uploaded, or sent anywhere.",
-          "warn"
-        );
-      });
+        if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) {
+          showStatus("This browser cannot record video. Please open this page in Google Chrome.", "warn");
+          return;
+        }
 
-      updateCounts();
-      updatePreview();
-    })();
-  </script>
-</body>
-            </html>
+        var total = parseInt(sele
