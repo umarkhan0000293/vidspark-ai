@@ -3,218 +3,323 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>VidSpark AI – Turn your prompt into video</title>
+  <title>VidSpark AI – Turn your ideas into video</title>
+  <meta name="description" content="VidSpark AI makes free slide videos in your browser and connects to a free AI video service for real AI scenes.">
   <style>
     :root {
       --bg: #f6f7fb;
-      --surface: #fff;
+      --surface: #ffffff;
       --text: #14162b;
       --muted: #5b6078;
       --border: #e2e5f0;
       --brand: #6d4aff;
-      --brand2: #ff4a9e;
+      --brand-2: #ff4a9e;
+      --brand-text: #ffffff;
+      --warn-bg: #fff6e0;
+      --warn-text: #6b4a00;
+      --ok-bg: #e8f7ee;
+      --ok-text: #11592f;
+      --shadow: 0 8px 30px rgba(30, 30, 80, 0.08);
+      --radius: 16px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1020;
+        --surface: #181a30;
+        --text: #f1f2fb;
+        --muted: #a2a7c4;
+        --border: #2b2e4d;
+        --warn-bg: #3a2f10;
+        --warn-text: #ffdf9a;
+        --ok-bg: #12301f;
+        --ok-text: #9be8b9;
+        --shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+      }
     }
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { scroll-behavior: smooth; }
     body {
-      margin: 0; background: var(--bg); color: var(--text);
-      font-family: system-ui, Arial, sans-serif; line-height: 1.5;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      line-height: 1.55;
     }
-    .wrap { max-width: 1000px; margin: auto; padding: 0 16px; }
-    header { border-bottom: 1px solid var(--border); background: var(--bg); }
-    .nav { display: flex; justify-content: space-between; align-items: center; height: 60px; }
-    .logo { font-weight: 800; font-size: 1.2rem; text-decoration: none; color: var(--text); }
-    .logo span { color: var(--brand); }
-    .hero { text-align: center; padding: 40px 0 20px; }
-    h1 { font-size: 2.2rem; margin: 10px 0; }
-    h1 em { color: var(--brand); font-style: normal; }
-    .hero p { color: var(--muted); max-width: 600px; margin: auto; }
-    .studio { display: grid; gap: 16px; padding: 20px 0 40px; }
-    @media(min-width: 850px){ .studio { grid-template-columns: 1.1fr .9fr; } }
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px; }
-    h2 { margin: 0 0 12px; font-size: 1.1rem; }
-    label { font-weight: 700; display: block; margin: 12px 0 6px; }
-    textarea, select {
-      width: 100%; padding: 12px; font: inherit; border: 1px solid var(--border);
-      border-radius: 12px; background: var(--bg); color: var(--text);
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 18px; }
+
+    header {
+      position: sticky; top: 0; z-index: 10;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
     }
-    textarea { min-height: 160px; resize: vertical; }
-    .options { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
-    .options.four { grid-template-columns: repeat(3,1fr); }
-    .opt input { display: none; }
-    .opt span {
-      display: block; text-align: center; padding: 10px; border: 2px solid var(--border);
-      border-radius: 10px; cursor: pointer; font-weight: 700; background: var(--bg);
+    .nav { display: flex; align-items: center; justify-content: space-between; height: 62px; }
+    .logo { font-weight: 800; font-size: 1.25rem; letter-spacing: -0.02em; text-decoration: none; color: var(--text); }
+    .logo span { background: linear-gradient(90deg, var(--brand), var(--brand-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .nav .links { display: flex; gap: 16px; }
+    .nav a.link { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+
+    .hero { padding: 48px 0 28px; text-align: center; }
+    .badge {
+      display: inline-block; padding: 6px 12px; border-radius: 999px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--muted); font-size: 0.82rem; font-weight: 600;
     }
-    .opt input:checked + span { border-color: var(--brand); background: #eee9ff; }
+    h1 { font-size: clamp(2rem, 7vw, 3.4rem); line-height: 1.1; margin: 16px 0 12px; letter-spacing: -0.03em; }
+    h1 em { font-style: normal; background: linear-gradient(90deg, var(--brand), var(--brand-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .hero p { max-width: 640px; margin: 0 auto 22px; color: var(--muted); font-size: 1.05rem; }
+    .hero .btnrow { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
     .btn {
-      width: 100%; margin-top: 16px; padding: 14px; border: 0; border-radius: 12px;
-      background: linear-gradient(90deg, var(--brand), var(--brand2));
-      color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer;
+      display: inline-block; border: 0; cursor: pointer; text-decoration: none; text-align: center;
+      padding: 14px 22px; border-radius: 12px; font-size: 1rem; font-weight: 700;
+      background: linear-gradient(90deg, var(--brand), var(--brand-2)); color: var(--brand-text);
     }
-    .btn:disabled { opacity: .5; cursor: not-allowed; }
-    .status { display: none; margin-top: 12px; padding: 10px; border-radius: 10px; font-size: .9rem; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn.disabled { opacity: 0.45; pointer-events: none; }
+    .btn.secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn.block { display: block; width: 100%; }
+    .btn.cancel { margin-top: 10px; }
+
+    .aisec { padding: 6px 0 22px; }
+    .muted { color: var(--muted); margin: 0 0 14px; font-size: 0.95rem; }
+    .stack { display: grid; gap: 10px; margin-top: 14px; }
+    .aiFrame { margin-top: 14px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: #000; }
+    .aiFrame iframe { display: block; width: 100%; height: 78vh; min-height: 560px; border: 0; }
+    .tip { margin: 12px 0 0; color: var(--muted); font-size: 0.85rem; }
+
+    .studio { display: grid; gap: 18px; padding: 18px 0 40px; }
+    @media (min-width: 860px) { .studio { grid-template-columns: 1.1fr 0.9fr; align-items: start; } }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px;
+    }
+    .card h2 { margin: 0 0 14px; font-size: 1.15rem; }
+    label.field, legend { display: block; font-weight: 700; font-size: 0.95rem; margin-bottom: 8px; padding: 0; }
+    fieldset { border: 0; margin: 18px 0 0; padding: 0; }
+    textarea {
+      width: 100%; min-height: 190px; resize: vertical;
+      padding: 14px; font: inherit; color: var(--text);
+      background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+    }
+    textarea:focus { outline: 3px solid rgba(109, 74, 255, 0.35); border-color: var(--brand); }
+    .count { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
+
+    .options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .options.four { grid-template-columns: repeat(2, 1fr); }
+    @media (min-width: 480px) { .options.four { grid-template-columns: repeat(4, 1fr); } }
+    .opt { position: relative; }
+    .opt input { position: absolute; opacity: 0; pointer-events: none; }
+    .opt span {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 2px; text-align: center; min-height: 58px; padding: 8px;
+      border: 2px solid var(--border); border-radius: 12px; background: var(--bg);
+      font-weight: 700; cursor: pointer;
+    }
+    .opt small { color: var(--muted); font-weight: 500; font-size: 0.75rem; }
+    .opt input:checked + span { border-color: var(--brand); background: rgba(109, 74, 255, 0.12); }
+    .opt input:focus-visible + span { outline: 3px solid rgba(109, 74, 255, 0.45); }
+    .opt input:disabled + span { opacity: 0.55; cursor: not-allowed; }
+
+    .actions { margin-top: 20px; }
+    .status {
+      margin-top: 14px; padding: 12px 14px; border-radius: 12px;
+      font-size: 0.93rem; display: none;
+    }
     .status.show { display: block; }
-    .status.warn { background: #fff6e0; color: #6b4a00; }
-    .status.ok { background: #e8f7ee; color: #11592f; }
+    .status.warn { background: var(--warn-bg); color: var(--warn-text); }
+    .status.ok { background: var(--ok-bg); color: var(--ok-text); }
+
     .stage {
-      width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 14px;
-      display: flex; align-items: center; justify-content: center; color: #aaa; text-align: center;
-      overflow: hidden;
+      width: 100%; max-height: 62vh; margin: 0 auto;
+      aspect-ratio: var(--ratio, 16 / 9);
+      background: var(--bg); border: 2px dashed var(--border); border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; text-align: center;
+      padding: 14px; color: var(--muted); overflow: hidden;
     }
-    .stage video { width: 100%; height: 100%; object-fit: contain; }
-    footer { text-align: center; color: var(--muted); padding: 20px 0 40px; font-size: .9rem; }
+    .stage strong { display: block; color: var(--text); margin-bottom: 4px; }
+    .stage.has-media { padding: 0; border-style: solid; background: #000; }
+    .stage canvas, .stage video { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .meta { margin: 12px 0 14px; color: var(--muted); font-size: 0.9rem; text-align: center; }
+
+    section.info { padding: 12px 0 36px; }
+    section.info h2 { font-size: 1.5rem; letter-spacing: -0.02em; margin: 0 0 14px; }
+    .grid3 { display: grid; gap: 14px; }
+    @media (min-width: 760px) { .grid3 { grid-template-columns: repeat(3, 1fr); } }
+    .grid3 .card h3 { margin: 0 0 6px; font-size: 1.05rem; }
+    .grid3 .card p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+    .num {
+      display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center;
+      border-radius: 50%; background: linear-gradient(90deg, var(--brand), var(--brand-2));
+      color: #fff; font-weight: 800; margin-bottom: 8px;
+    }
+    .honest { background: var(--warn-bg); color: var(--warn-text); border-radius: var(--radius); padding: 18px; }
+    .honest h2 { margin-top: 0; font-size: 1.15rem; }
+    .honest ul { margin: 0; padding-left: 20px; }
+    footer { border-top: 1px solid var(--border); padding: 24px 0 40px; color: var(--muted); font-size: 0.9rem; text-align: center; }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="wrap nav">
-    <a class="logo" href="#">Vid<span>Spark</span> AI</a>
-  </div>
-</header>
-
-<main class="wrap">
-
-  <section class="hero">
-    <h1>Turn your prompt into <em>real AI video</em></h1>
-    <p>Describe any scene and create an AI-generated video.</p>
-  </section>
-
-  <section class="studio">
-
-    <div class="card">
-      <h2>1. Your prompt</h2>
-
-      <label for="prompt">Write your scene</label>
-      <textarea id="prompt" placeholder="Example: An American family browsing a household-goods aisle. A parent compares two products while a child looks at nearby items. Warm lighting, gentle camera push-in. No text or captions."></textarea>
-
-      <label>Aspect ratio</label>
-      <div class="options">
-        <label class="opt">
-          <input type="radio" name="ratio" value="16:9" checked>
-          <span>16:9</span>
-        </label>
-        <label class="opt">
-          <input type="radio" name="ratio" value="9:16">
-          <span>9:16</span>
-        </label>
-        <label class="opt">
-          <input type="radio" name="ratio" value="1:1">
-          <span>1:1</span>
-        </label>
+  <header>
+    <div class="wrap nav">
+      <a class="logo" href="#top">Vid<span>Spark</span> AI</a>
+      <div class="links">
+        <a class="link" href="#ai">AI video</a>
+        <a class="link" href="#studio">Slide video</a>
       </div>
-
-      <label>Video length</label>
-      <div class="options four">
-        <label class="opt">
-          <input type="radio" name="duration" value="15" checked>
-          <span>15 sec</span>
-        </label>
-        <label class="opt">
-          <input type="radio" name="duration" value="30">
-          <span>30 sec</span>
-        </label>
-        <label class="opt">
-          <input type="radio" name="duration" value="90">
-          <span>90 sec</span>
-        </label>
-      </div>
-
-      <button class="btn" id="generateBtn">Create Video</button>
-      <div class="status" id="status"></div>
     </div>
+  </header>
 
-    <div class="card">
-      <h2>2. Preview</h2>
-      <div class="stage" id="stage">
-        <div>No video yet</div>
-      </div>
-      <button class="btn" id="downloadBtn" disabled style="background:#fff;color:#14162b;border:1px solid var(--border)">Download Video</button>
+  <main id="top">
+    <div class="wrap">
+
+      <section class="hero">
+        <span class="badge">Stage 3 · AI video + slide video</span>
+        <h1>Turn your ideas into <em>video</em></h1>
+        <p>Describe a scene and let a free AI service create real footage (limited per day), or make unlimited free slide videos from your script right on your device.</p>
+        <div class="btnrow">
+          <a class="btn" href="#ai">AI video (beta)</a>
+          <a class="btn secondary" href="#studio">Slide video</a>
+        </div>
+      </section>
+
+      <section class="aisec" id="ai">
+        <div class="card">
+          <h2>AI video (beta)</h2>
+          <p class="muted">Describe a scene and an AI model creates real footage, sometimes with sound. It runs on Hugging Face’s free GPU, so each person gets only a few short clips per day on their own free account. It is not unlimited.</p>
+          <div class="status" id="aiStatus" role="status" aria-live="polite"></div>
+          <div class="stack">
+            <button class="btn block" id="aiOpen" type="button">Open AI video studio</button>
+            <a class="btn secondary block" id="aiLink" href="#ai">Open on Hugging Face</a>
+          </div>
+          <div class="aiFrame" id="aiFrame" hidden></div>
+          <p class="tip">If the box above shows a login or quota message, tap “Open on Hugging Face”, log in to your free account there, and create your clip. Clips are made by a third-party service and follow its rules and license.</p>
+        </div>
+      </section>
+
+      <section class="studio" id="studio">
+
+        <div class="card">
+          <h2>Slide video: your script</h2>
+
+          <label class="field" for="script">Write or paste your script</label>
+          <textarea id="script" maxlength="2000" placeholder="Example: Welcome to our bakery. Every morning we bake fresh bread, pastries, and cakes using local ingredients."></textarea>
+          <div class="count">
+            <span id="wordCount">0 words</span>
+            <span id="charCount">0 / 2000 characters</span>
+          </div>
+
+          <fieldset>
+            <legend>Aspect ratio</legend>
+            <div class="options">
+              <label class="opt"><input type="radio" name="ratio" value="16 / 9" data-label="16:9" checked><span>16:9<small>Landscape</small></span></label>
+              <label class="opt"><input type="radio" name="ratio" value="9 / 16" data-label="9:16"><span>9:16<small>Vertical</small></span></label>
+              <label class="opt"><input type="radio" name="ratio" value="1 / 1" data-label="1:1"><span>1:1<small>Square</small></span></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Video length</legend>
+            <div class="options four">
+              <label class="opt"><input type="radio" name="duration" value="15" checked><span>15 sec</span></label>
+              <label class="opt"><input type="radio" name="duration" value="30"><span>30 sec</span></label>
+              <label class="opt"><input type="radio" name="duration" value="60"><span>60 sec</span></label>
+              <label class="opt"><input type="radio" name="duration" value="90"><span>90 sec</span></label>
+            </div>
+          </fieldset>
+
+          <div class="actions">
+            <button class="btn block" id="generateBtn" type="button">Create video</button>
+            <button class="btn secondary block cancel" id="cancelBtn" type="button" hidden>Cancel</button>
+            <div class="status" id="status" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Preview and download</h2>
+          <div class="stage" id="stage">
+            <div>
+              <strong>No video yet</strong>
+              Press “Create video” and your video will appear here.
+            </div>
+          </div>
+          <p class="meta" id="meta">Format: 16:9 · Length: 15 sec</p>
+          <button class="btn secondary block" id="downloadBtn" type="button" disabled>Download video (create one first)</button>
+        </div>
+
+      </section>
+
+      <section class="info">
+        <div class="honest">
+          <h2>What this does, and what it doesn’t</h2>
+          <ul>
+            <li>Slide video: a real video file made on your device from your script. Free and private. No AI footage and no voice.</li>
+            <li>AI video: real AI footage from a free third-party service. Only a few short clips per day per free account, and it can be slow or unavailable.</li>
+            <li>VidSpark does not store your videos. Download them right after they are made.</li>
+          </ul>
+        </div>
+      </section>
+
     </div>
+  </main>
 
-  </section>
+  <footer>
+    <div class="wrap">VidSpark AI · Built in small stages with free and open-source tools.</div>
+  </footer>
 
-</main>
+  <script src="app.js"></script>
 
-<footer>VidSpark AI</footer>
+  <script>
+    (function () {
+      // PUT THE AI SPACE NAME BETWEEN THE QUOTES BELOW, like "owner/space-name"
+      var AI_SPACE = "";
 
-<script>
-const BACKEND_URL = "https://YOUR-BACKEND-URL.vercel.app/api/generate-video";
+      var status = document.getElementById("aiStatus");
+      var openBtn = document.getElementById("aiOpen");
+      var link = document.getElementById("aiLink");
+      var frameBox = document.getElementById("aiFrame");
 
-const promptInput = document.getElementById("prompt");
-const generateBtn = document.getElementById("generateBtn");
-const downloadBtn = document.getElementById("downloadBtn");
-const statusBox = document.getElementById("status");
-const stage = document.getElementById("stage");
+      function say(message, type) {
+        status.textContent = message;
+        status.className = "status show " + type;
+      }
 
-let videoUrl = "";
-let busy = false;
+      var valid = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(AI_SPACE);
+      if (!valid) {
+        say("AI video is not connected yet. No AI service has been chosen for this site, so nothing is generated here.", "warn");
+        openBtn.disabled = true;
+        link.classList.add("disabled");
+        link.removeAttribute("href");
+        return;
+      }
 
-function showStatus(text, type = "warn") {
-  statusBox.textContent = text;
-  statusBox.className = "status show " + type;
-}
+      var parts = AI_SPACE.split("/");
+      var pageUrl = "https://huggingface.co/spaces/" + AI_SPACE;
+      var embedUrl = "https://" + (parts[0] + "-" + parts[1]).toLowerCase().replace(/[._]/g, "-") + ".hf.space";
 
-function selected(name) {
-  return document.querySelector(`input[name="${name}"]:checked`).value;
-}
+      link.href = pageUrl;
+      link.target = "_blank";
+      link.rel = "noopener";
+      say("Connected to a free Hugging Face AI service. Free accounts get only a few minutes of GPU per day, so expect just a few short clips.", "ok");
 
-async function createVideo() {
-  if (busy) return;
-
-  const prompt = promptInput.value.trim();
-
-  if (!prompt) {
-    showStatus("Please write a prompt first.");
-    return;
-  }
-
-  busy = true;
-  generateBtn.disabled = true;
-  downloadBtn.disabled = true;
-  showStatus("Creating your AI video...");
-
-  try {
-    const res = await fetch(BACKEND_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        prompt,
-        aspectRatio: selected("ratio"),
-        duration: selected("duration") + "s"
-      })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || !data.videoUrl) {
-      throw new Error(data.error || "Video generation failed.");
-    }
-
-    videoUrl = data.videoUrl;
-
-    stage.innerHTML = `<video src="${videoUrl}" controls playsinline></video>`;
-    downloadBtn.disabled = false;
-    showStatus("Your video is ready.", "ok");
-
-  } catch (err) {
-    showStatus(err.message || "Something went wrong.");
-  } finally {
-    busy = false;
-    generateBtn.disabled = false;
-  }
-}
-
-downloadBtn.onclick = () => {
-  if (!videoUrl) return;
-  const a = document.createElement("a");
-  a.href = videoUrl;
-  a.download = "vidspark-video.mp4";
-  a.click();
-};
-
-generateBtn.onclick = createVideo;
-</script>
-
+      var loaded = false;
+      openBtn.addEventListener("click", function () {
+        if (!loaded) {
+          var frame = document.createElement("iframe");
+          frame.src = embedUrl;
+          frame.title = "AI video studio";
+          frame.allow = "autoplay; clipboard-write; fullscreen";
+          frame.loading = "lazy";
+          frameBox.appendChild(frame);
+          frameBox.hidden = false;
+          openBtn.textContent = "Hide AI video studio";
+          loaded = true;
+          return;
+        }
+        frameBox.hidden = !frameBox.hidden;
+        openBtn.textContent = frameBox.hidden ? "Open AI video studio" : "Hide AI video studio";
+      });
+    })();
+  </script>
 </body>
 </html>
