@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VidSpark AI – Turn your script into video</title>
+  <meta name="description" content="VidSpark AI is a free, open-source video maker that turns a written script into a video.">
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --surface: #ffffff;
+      --text: #14162b;
+      --muted: #5b6078;
+      --border: #e2e5f0;
+      --brand: #6d4aff;
+      --brand-2: #ff4a9e;
+      --brand-text: #ffffff;
+      --warn-bg: #fff6e0;
+      --warn-text: #6b4a00;
+      --ok-bg: #e8f7ee;
+      --ok-text: #11592f;
+      --shadow: 0 8px 30px rgba(30, 30, 80, 0.08);
+      --radius: 16px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1020;
+        --surface: #181a30;
+        --text: #f1f2fb;
+        --muted: #a2a7c4;
+        --border: #2b2e4d;
+        --warn-bg: #3a2f10;
+        --warn-text: #ffdf9a;
+        --ok-bg: #12301f;
+        --ok-text: #9be8b9;
+        --shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+      }
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      line-height: 1.55;
+    }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 18px; }
+
+    /* Header */
+    header {
+      position: sticky; top: 0; z-index: 10;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav { display: flex; align-items: center; justify-content: space-between; height: 62px; }
+    .logo { font-weight: 800; font-size: 1.25rem; letter-spacing: -0.02em; text-decoration: none; color: var(--text); }
+    .logo span { background: linear-gradient(90deg, var(--brand), var(--brand-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .nav a.link { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+
+    /* Hero */
+    .hero { padding: 48px 0 28px; text-align: center; }
+    .badge {
+      display: inline-block; padding: 6px 12px; border-radius: 999px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--muted); font-size: 0.82rem; font-weight: 600;
+    }
+    h1 { font-size: clamp(2rem, 7vw, 3.4rem); line-height: 1.1; margin: 16px 0 12px; letter-spacing: -0.03em; }
+    h1 em { font-style: normal; background: linear-gradient(90deg, var(--brand), var(--brand-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .hero p { max-width: 620px; margin: 0 auto 22px; color: var(--muted); font-size: 1.05rem; }
+    .btn {
+      display: inline-block; border: 0; cursor: pointer; text-decoration: none;
+      padding: 14px 22px; border-radius: 12px; font-size: 1rem; font-weight: 700;
+      background: linear-gradient(90deg, var(--brand), var(--brand-2)); color: var(--brand-text);
+    }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn.secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn.block { width: 100%; }
+
+    /* Studio */
+    .studio { display: grid; gap: 18px; padding: 18px 0 40px; }
+    @media (min-width: 860px) { .studio { grid-template-columns: 1.1fr 0.9fr; align-items: start; } }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px;
+    }
+    .card h2 { margin: 0 0 14px; font-size: 1.15rem; }
+    label.field, legend { display: block; font-weight: 700; font-size: 0.95rem; margin-bottom: 8px; padding: 0; }
+    fieldset { border: 0; margin: 18px 0 0; padding: 0; }
+    textarea {
+      width: 100%; min-height: 190px; resize: vertical;
+      padding: 14px; font: inherit; color: var(--text);
+      background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+    }
+    textarea:focus { outline: 3px solid rgba(109, 74, 255, 0.35); border-color: var(--brand); }
+    .count { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
+
+    .options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .options.four { grid-template-columns: repeat(2, 1fr); }
+    @media (min-width: 480px) { .options.four { grid-template-columns: repeat(4, 1fr); } }
+    .opt input { position: absolute; opacity: 0; pointer-events: none; }
+    .opt span {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 2px; text-align: center; min-height: 58px; padding: 8px;
+      border: 2px solid var(--border); border-radius: 12px; background: var(--bg);
+      font-weight: 700; cursor: pointer;
+    }
+    .opt small { color: var(--muted); font-weight: 500; font-size: 0.75rem; }
+    .opt input:checked + span { border-color: var(--brand); background: rgba(109, 74, 255, 0.12); }
+    .opt input:focus-visible + span { outline: 3px solid rgba(109, 74, 255, 0.45); }
+
+    .actions { margin-top: 20px; }
+    .status {
+      margin-top: 14px; padding: 12px 14px; border-radius: 12px;
+      font-size: 0.93rem; display: none;
+    }
+    .status.show { display: block; }
+    .status.warn { background: var(--warn-bg); color: var(--warn-text); }
+    .status.ok { background: var(--ok-bg); color: var(--ok-text); }
+
+    /* Preview */
+    .stage {
+      width: 100%; max-height: 62vh; margin: 0 auto;
+      aspect-ratio: var(--ratio, 16 / 9);
+      background: var(--bg); border: 2px dashed var(--border); border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; text-align: center;
+      padding: 14px; color: var(--muted);
+    }
+    .stage strong { display: block; color: var(--text); margin-bottom: 4px; }
+    .meta { margin: 12px 0 14px; color: var(--muted); font-size: 0.9rem; text-align: center; }
+
+    /* Info sections */
+    section.info { padding: 12px 0 36px; }
+    section.info h2 { font-size: 1.5rem; letter-spacing: -0.02em; margin: 0 0 14px; }
+    .grid3 { display: grid; gap: 14px; }
+    @media (min-width: 760px) { .grid3 { grid-template-columns: repeat(3, 1fr); } }
+    .grid3 .card h3 { margin: 0 0 6px; font-size: 1.05rem; }
+    .grid3 .card p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+    .num {
+      display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center;
+      border-radius: 50%; background: linear-gradient(90deg, var(--brand), var(--brand-2));
+      color: #fff; font-weight: 800; margin-bottom: 8px;
+    }
+    .honest { background: var(--warn-bg); color: var(--warn-text); border-radius: var(--radius); padding: 18px; }
+    .honest h2 { margin-top: 0; font-size: 1.15rem; }
+    .honest ul { margin: 0; padding-left: 20px; }
+    footer { border-top: 1px solid var(--border); padding: 24px 0 40px; color: var(--muted); font-size: 0.9rem; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="wrap nav">
+      <a class="logo" href="#top">Vid<span>Spark</span> AI</a>
+      <a class="link" href="#studio">Open the studio</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <div class="wrap">
+
+      <section class="hero">
+        <span class="badge">Stage 1 · Interface preview</span>
+        <h1>Turn your script into <em>video</em></h1>
+        <p>Write your script, choose a format and length, and preview the result. The video engine is being built step by step, and this page will say clearly when it is connected.</p>
+        <a class="btn" href="#studio">Start with a script</a>
+      </section>
+
+      <section class="studio" id="studio">
+
+        <div class="card">
+          <h2>1. Your script</h2>
+
+          <label class="field" for="script">Write or paste your script</label>
+          <textarea id="script" maxlength="2000" placeholder="Example: Welcome to our bakery. Every morning we bake fresh bread, pastries, and cakes using local ingredients."></textarea>
+          <div class="count">
+            <span id="wordCount">0 words</span>
+            <span id="charCount">0 / 2000 characters</span>
+          </div>
+
+          <fieldset>
+            <legend>Aspect ratio</legend>
+            <div class="options">
+              <label class="opt"><input type="radio" name="ratio" value="16 / 9" data-label="16:9" checked><span>16:9<small>Landscape</small></span></label>
+              <label class="opt"><input type="radio" name="ratio" value="9 / 16" data-label="9:16"><span>9:16<small>Vertical</small></span></label>
+              <label class="opt"><input type="radio" name="ratio" value="1 / 1" data-label="1:1"><span>1:1<small>Square</small></span></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Target duration</legend>
+            <div class="options four">
+              <label class="opt"><input type="radio" name="duration" value="15" checked><span>15 sec</span></label>
+              <label class="opt"><input type="radio" name="duration" value="30"><span>30 sec</span></label>
+              <label class="opt"><input type="radio" name="duration" value="60"><span>60 sec</span></label>
+              <label class="opt"><input type="radio" name="duration" value="90"><span>90 sec</span></label>
+            </div>
+          </fieldset>
+
+          <div class="actions">
+            <button class="btn block" id="generateBtn" type="button">Generate video</button>
+            <div class="status" id="status" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>2. Preview and download</h2>
+          <div class="stage" id="stage">
+            <div>
+              <strong>No video yet</strong>
+              Your video will appear here once the video engine is connected.
+            </div>
+          </div>
+          <p class="meta" id="meta">Format: 16:9 · Target length: 15 sec</p>
+          <button class="btn secondary block" id="downloadBtn" type="button" disabled>Download video (not available yet)</button>
+        </div>
+
+      </section>
+
+      <section class="info">
+        <h2>How VidSpark AI will work</h2>
+        <div class="grid3">
+          <div class="card"><div class="num">1</div><h3>Write a script</h3><p>Paste or type the words you want in your video.</p></div>
+          <div class="card"><div class="num">2</div><h3>Pick a format</h3><p>Choose landscape, vertical, or square, plus a target length.</p></div>
+          <div class="card"><div class="num">3</div><h3>Preview and download</h3><p>Watch the result in the page, then save it as an MP4 file.</p></div>
+        </div>
+      </section>
+
+      <section class="info">
+        <div class="honest">
+          <h2>What works today, and what doesn’t</h2>
+          <ul>
+            <li>Works now: the script box, format and length options, and the live preview shape.</li>
+            <li>Not connected yet: the video engine, voice, and downloads.</li>
+            <li>Free tools have real limits. Video creation will be limited by free computing capacity, so it will not be unlimited.</li>
+          </ul>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">VidSpark AI · Built in small stages with free and open-source tools.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var script = document.getElementById("script");
+      var wordCount = document.getElementById("wordCount");
+      var charCount = document.getElementById("charCount");
+      var stage = document.getElementById("stage");
+      var meta = document.getElementById("meta");
+      var status = document.getElementById("status");
+      var generateBtn = document.getElementById("generateBtn");
+
+      function selected(name) {
+        return document.querySelector('input[name="' + name + '"]:checked');
+      }
+
+      function updateCounts() {
+        var text = script.value.trim();
+        var words = text ? text.split(/\s+/).length : 0;
+        wordCount.textContent = words + (words === 1 ? " word" : " words");
+        charCount.textContent = script.value.length + " / 2000 characters";
+      }
+
+      function updatePreview() {
+        var ratio = selected("ratio");
+        var duration = selected("duration");
+        stage.style.setProperty("--ratio", ratio.value);
+        meta.textContent = "Format: " + ratio.dataset.label + " · Target length: " + duration.value + " sec";
+      }
+
+      function showStatus(message, type) {
+        status.textContent = message;
+        status.className = "status show " + type;
+      }
+
+      script.addEventListener("input", updateCounts);
+      document.querySelectorAll('input[name="ratio"], input[name="duration"]').forEach(function (el) {
+        el.addEventListener("change", updatePreview);
+      });
+
+      generateBtn.addEventListener("click", function () {
+        var text = script.value.trim();
+        if (!text) {
+          showStatus("Please write a script first.", "warn");
+          script.focus();
+          return;
+        }
+        var ratio = selected("ratio").dataset.label;
+        var duration = selected("duration").value;
+        showStatus(
+          "Your script and settings (" + ratio + ", " + duration + " sec) look good, but no video was created. " +
+          "The video engine is not connected yet. Nothing was generated, uploaded, or sent anywhere.",
+          "warn"
+        );
+      });
+
+      updateCounts();
+      updatePreview();
+    })();
+  </script>
+</body>
+            </html>
