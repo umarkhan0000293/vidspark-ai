@@ -249,3 +249,40 @@
   <script src="app.js"></script>
 </body>
 </html>
+Upgrade my existing VidSpark AI website to generate REAL AI videos from text prompts, similar to Google Flow with Veo.
+
+CURRENT WEBSITE:
+https://umarkhan0000293.github.io/vidspark-ai/
+
+CURRENT PROBLEM:
+The website currently creates animated slides from text. It does not generate actual AI-created visual scenes.
+
+MY GOAL:
+I want to enter a visual prompt and receive an actual AI-generated video showing exactly what the prompt describes.
+
+REQUIRED CHANGES:
+
+1. Keep my existing VidSpark AI website design and features.
+
+2. Replace the current text-slide video generation system with a genuine AI text-to-video generation system.
+
+3. Integrate a supported video-generation model through its official API, such as Google Veo, subject to API access and availability.
+
+4. Example prompt:
+   "An American family browsing an inexpensive household-goods aisle. A parent compares two practical products while a child looks at nearby merchandise. Warm, relatable atmosphere, pale blue accents, crisp dark outlines. Gentle camera push-in."
+
+EXPECTED RESULT:
+Generate an actual animated scene showing the American family shopping in a store. Show shelves, products, the parent comparing two items, and the child looking at merchandise. The camera should gently push in.
+
+5. Do not turn the prompt into text slides.
+6. Do not display the prompt as text in the generated video.
+7. Do not use CSS animations, text overlays, or fake video generation as substitutes for AI-generated footage.
+8. Submit prompts to the real video-generation API, handle asynchronous generation jobs, retrieve the completed video, and display it in a video player.
+9. Add a download button for the actual generated video.
+10. Display clear errors if the API is unavailable, credentials are missing, or generation fails.
+11. Keep all secret API keys on a secure backend. Never expose them in frontend JavaScript or GitHub.
+12. Because GitHub Pages only hosts static website files, create a compatible backend service for API requests and video generation. Keep the frontend deployed on GitHub Pages if practical.
+13. Do not claim that real AI video generation works until the API is properly configured and tested.
+
+FIRST:
+Inspect the entire existing repository. Identify the current video-generation implementation, explain what needs to change, and implement the solution using a supported API and backend.
